@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">FlowerShop</string>
+    <string-array name="sortlist">
+        <item>Id</item>
+        <item>Name A-z</item>
+        <item>Name Z-a</item>
+        <item>Price_inc</item>
+        <item>Price_red</item>
+    </string-array>
+    <string name="action_search">Search</string>
+    <string name="search_hint">Type name…</string>
+    <string name="toolbar_title">Flowers</string>
 </resources>

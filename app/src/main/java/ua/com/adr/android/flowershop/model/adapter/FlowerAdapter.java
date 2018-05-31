@@ -6,6 +6,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,22 +17,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ua.com.adr.android.flowershop.R;
-import ua.com.adr.android.flowershop.model.pojo.Flower;
 import ua.com.adr.android.flowershop.model.helper.Constants;
+import ua.com.adr.android.flowershop.model.pojo.Flower;
 
 /**
  * Created by Andy on 16.05.2018.
  */
 
-public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.Holder> {
+public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.Holder> implements Filterable {
 
     private static final String TAG = FlowerAdapter.class.getSimpleName();
     private final FlowerClickListener mListner;
-    private List<Flower> mFlowers = new ArrayList<>();
+    private List<Flower> mFlowers;
+    private List<Flower> flowerListFiltered;
 
     public FlowerAdapter(FlowerClickListener listener) {
         mFlowers = new ArrayList<>();
         mListner = listener;
+        flowerListFiltered = new ArrayList<>();
+        flowerListFiltered = mFlowers;
     }
 
     @NonNull
@@ -44,7 +49,7 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.Holder> {
     @Override
     public void onBindViewHolder(@NonNull Holder holder, int position) {
 
-        Flower currFlower = mFlowers.get(position);
+        Flower currFlower = flowerListFiltered.get(position);
 
         holder.mName.setText(currFlower.getName());
         holder.mPrice.setText("$" + Double.toString(currFlower.getPrice()));
@@ -55,7 +60,44 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.Holder> {
 
     @Override
     public int getItemCount() {
-        return mFlowers.size();
+        return flowerListFiltered.size();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                String charString = charSequence.toString();
+                if (charString.isEmpty()) {
+                    flowerListFiltered = mFlowers;
+                } else {
+                    List<Flower> filteredList = new ArrayList<>();
+                    for (Flower row : mFlowers) {
+
+                        // name match condition. this might differ depending on your requirement
+                        // here we are looking for name or phone number match
+                        if (row.getName().toLowerCase().contains(charString.toLowerCase())) {
+                            filteredList.add(row);
+                        }
+                    }
+
+                    flowerListFiltered = filteredList;
+                }
+
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = flowerListFiltered;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                flowerListFiltered = (ArrayList<Flower>) filterResults.values;
+
+                // refresh the list with filtered data
+                notifyDataSetChanged();
+            }
+        };
     }
 
     public void addFlower(Flower flower) {
@@ -65,13 +107,15 @@ public class FlowerAdapter extends RecyclerView.Adapter<FlowerAdapter.Holder> {
     }
 
     public Flower getSelectedFlower(int position) {
-        return mFlowers.get(position);
+       // return mFlowers.get(position);
+        return flowerListFiltered.get(position);
     }
 
     public void reset() {
         mFlowers.clear();
         notifyDataSetChanged();
     }
+
 
     public class Holder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
